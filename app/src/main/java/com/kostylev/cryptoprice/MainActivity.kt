@@ -1,23 +1,33 @@
 package com.kostylev.cryptoprice
 
+import android.content.Context
 import android.content.res.Configuration
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import android.os.Bundle
 import android.text.Html
+import android.text.method.LinkMovementMethod
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
+import android.view.animation.AnimationUtils
 import android.widget.ScrollView
 import android.widget.TextView
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.constraintlayout.utils.widget.ImageFilterView
 import androidx.databinding.DataBindingUtil
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout.OnRefreshListener
+import com.google.android.material.chip.Chip
 import com.google.gson.JsonParser
 import com.kostylev.cryptoprice.adapters.RecyclerViewAdapterCoin
 import com.kostylev.cryptoprice.databinding.ActivityMainBinding
+import com.kostylev.cryptoprice.helpers.Properties
 import com.kostylev.cryptoprice.helpers.RecyclerViewItemClickListener
+import com.kostylev.cryptoprice.helpers.Screens
 import com.kostylev.cryptoprice.models.Coin
 import com.kostylev.cryptoprice.network.ApiCoinGecko
 import com.kostylev.cryptoprice.network.Config
@@ -35,17 +45,33 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     val viewModel: ViewModelCoin by viewModels()
 
+    private lateinit var currencySelected: String
+    private var isFirstChip = true
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
 
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
         binding.lifecycleOwner = this
 
+        val currencies = arrayOf("USD", "EUR", "RUB", "GBP")
+        for (currency in currencies) {
+            binding.chipGroup.addView(createChip(this, currency))
+        }
+
+        showScreen(Screens.LOADING)
         getData()
 
-        binding.isCoinScreen = false
-        binding.isListScreen = true
+        binding.buttonUpdate.setOnClickListener {
+            getData()
+        }
+
+        binding.swipeRefreshLayout.setOnRefreshListener(OnRefreshListener {
+            getData()
+            binding.swipeRefreshLayout.isRefreshing = false
+        })
+
+        enableClickableHtmlLinksTextView()
 
         binding.recyclerList.addOnItemTouchListener(
             RecyclerViewItemClickListener(
@@ -81,11 +107,73 @@ class MainActivity : AppCompatActivity() {
         supportActionBar?.elevation = 0f
     }
 
+    private fun setNightTheme(isNight: Boolean) {
+        AppCompatDelegate.setDefaultNightMode(if (isNight) AppCompatDelegate.MODE_NIGHT_YES else AppCompatDelegate.MODE_NIGHT_NO)
+        delegate.applyDayNight()
+    }
+
+    private fun showScreen(screens: Screens){
+        supportActionBar?.title = getString(R.string.list)
+        binding.layoutCoin.animation = null
+        binding.isErrorScreen = false
+        binding.isLoadingScreen = false
+        binding.isListScreen = false
+        binding.isCoinScreen = false
+        binding.chipGroup.visibility = View.GONE
+
+        when (screens) {
+            Screens.LOADING -> {
+                binding.isLoadingScreen = true
+                val textLoading = getString(R.string.loading)
+                binding.textDescription.text = textLoading
+                binding.textCategory.text = textLoading
+            }
+            Screens.ERROR -> {
+                binding.isErrorScreen = true
+                val textError = getString(R.string.error)
+                binding.textDescription.text = textError
+                binding.textCategory.text = textError
+            }
+            Screens.LIST -> {
+                binding.isListScreen = true
+                supportActionBar?.setDisplayHomeAsUpEnabled(false)
+                binding.chipGroup.visibility = View.VISIBLE
+            }
+            Screens.COIN -> {
+                binding.isCoinScreen = true
+                supportActionBar?.setDisplayHomeAsUpEnabled(true)
+            }
+        }
+    }
+
+    private fun createChip(context: Context, title: String): Chip {
+        return Chip(context).apply {
+            text = title
+            isCloseIconVisible = false
+            isCheckedIconVisible = false
+            if(isFirstChip){
+                isChecked = true
+                currencySelected = title
+                isFirstChip = false
+            }
+
+            setOnClickListener {
+                if(currencySelected != title){
+                    currencySelected = title
+                    showScreen(Screens.LOADING)
+                    getData()
+                }
+            }
+        }
+
+    }
+
     private fun getData(){
-        val retrofit = Retrofit.Builder().baseUrl(Config.BASE_URL).addConverterFactory(
-            GsonConverterFactory.create()).build()
+        Properties.instance?.currency = currencySelected
+
+        val retrofit = Retrofit.Builder().baseUrl(Config.BASE_URL).addConverterFactory(GsonConverterFactory.create()).build()
         val api = retrofit.create(ApiCoinGecko::class.java)
-        val getListCall: Call<ArrayList<Coin.CoinItem>> = api.getList("USD", "market_cap_desc", 50, 1)
+        val getListCall: Call<ArrayList<Coin.CoinItem>> = api.getList(currencySelected, "market_cap_desc", 50, 1)
 
         val adapter = RecyclerViewAdapterCoin()
         binding.recyclerList.adapter = adapter
@@ -98,6 +186,8 @@ class MainActivity : AppCompatActivity() {
                 response: Response<ArrayList<Coin.CoinItem>>
             ) {
                 // Log.d("Response", "onResponse: ${response.body()?.get(0)?.name}")
+                // binding.isLoading = false
+                showScreen(Screens.LIST)
                 viewModel.updateData(response.body()!!)
                 binding.recyclerList.scheduleLayoutAnimation()
             }
@@ -106,6 +196,8 @@ class MainActivity : AppCompatActivity() {
                 call: Call<ArrayList<Coin.CoinItem>>,
                 t: Throwable
             ) {
+                // binding.isLoading = false
+                showScreen(Screens.ERROR)
                 t.printStackTrace()
             }
         })
@@ -116,6 +208,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun getDataCoinScreen(view: View){
+        showScreen(Screens.LOADING)
         binding.scrollView.fullScroll(ScrollView.FOCUS_UP) // возврат к изначальному положению ScrollView (самый верх)
 
         binding.imageCoin.setImageDrawable(view.findViewById<ImageFilterView>(R.id.imageCoinIcon).drawable)
@@ -145,13 +238,11 @@ class MainActivity : AppCompatActivity() {
                         binding.textCategory.text = category
 
                         val coinName = view.findViewById<TextView>(R.id.textName).text.toString()
-                        binding.isCoinScreen = true
-                        binding.isListScreen = false
+                        showScreen(Screens.COIN)
                         supportActionBar?.title = coinName
+                        binding.layoutCoin.startAnimation(AnimationUtils.loadAnimation(applicationContext, R.anim.jump))
                     } else {
-                        // error
-                        binding.isCoinScreen = false
-                        binding.isListScreen = true
+                        showScreen(Screens.ERROR)
                     }
 
                 }
@@ -163,11 +254,40 @@ class MainActivity : AppCompatActivity() {
         return text == "" || text == " " || text.isEmpty()
     }
 
+    private fun enableClickableHtmlLinksTextView(){
+        binding.textDescription.isClickable = true
+        binding.textDescription.movementMethod = LinkMovementMethod.getInstance()
+    }
+
     private fun showMessage(message: String){
         val builder = AlertDialog.Builder(this).setTitle(getString(R.string.information)).setMessage(message)
         builder.setPositiveButton(android.R.string.yes) { dialog, which ->
             dialog.dismiss()
         }
         builder.show()
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        menuInflater.inflate(R.menu.main, menu)
+        return super.onCreateOptionsMenu(menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when (item.itemId){
+            R.id.action_theme_day -> setNightTheme(false)
+            R.id.action_theme_night -> setNightTheme(true)
+            R.id.action_info -> showMessage(getString((R.string.about)))
+            android.R.id.home -> showScreen(Screens.LIST) // Back icon
+        }
+        return super.onOptionsItemSelected(item)
+    }
+
+    // Device back button
+    override fun onBackPressed() {
+        if (binding.swipeRefreshLayout.visibility == View.VISIBLE) {
+            super.onBackPressed()
+        } else {
+            showScreen(Screens.LIST)
+        }
     }
 }

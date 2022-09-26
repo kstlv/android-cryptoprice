@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">CryptoPrice</string>
+    <string name="list">Список криптовалют</string>
+    <string name="loading">Загрузка</string>
+    <string name="error">Ошибка</string>
+    <string name="try_again">Попробовать снова</string>
+    <string name="error_message">Случилась какая-то ошибка :(\nПопробуем снова?</string>
+    <string name="categories">Категории</string>
+    <string name="description">Описание</string>
+    <string name="information">Информация</string>
+    <string name="about">"Разработчик: Данил Костылев"</string>
+    <string name="no_data">Данные отсутствуют</string>
+    <string name="theme">Тема</string>
+    <string name="theme_day">Светлая</string>
+    <string name="theme_night">Тёмная</string>
+</resources>

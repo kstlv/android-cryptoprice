@@ -9,9 +9,9 @@ interface ApiCoinGecko {
 
     @GET("coins/markets")
     fun getList(
-        @Query("vs_currency") vs_currency: String,
+        @Query("vs_currency") vsCurrency: String,
         @Query("order") order: String,
-        @Query("per_page") per_page: Int,
+        @Query("per_page") perPage: Int,
         @Query("page") page: Int
     ): Call<ArrayList<Coin.CoinItem>>
 

@@ -8,9 +8,12 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.kostylev.cryptoprice.R
 import com.kostylev.cryptoprice.databinding.ItemCoinBinding
+import com.kostylev.cryptoprice.helpers.Properties
 import com.kostylev.cryptoprice.models.Coin
 import java.text.NumberFormat
 import java.util.*
+import kotlin.collections.ArrayList
+
 
 class RecyclerViewAdapterCoin : RecyclerView.Adapter<RecyclerViewAdapterCoin.ViewHolder>() {
     var lists = ArrayList<Coin.CoinItem>()
@@ -51,9 +54,8 @@ class RecyclerViewAdapterCoin : RecyclerView.Adapter<RecyclerViewAdapterCoin.Vie
 
             val numberFormat: NumberFormat = NumberFormat.getCurrencyInstance()
             numberFormat.maximumFractionDigits = 2 // количество десятичных знаков
-            val currency = "RUB"
+            var currency = Properties.instance?.currency.toString()
             numberFormat.currency = Currency.getInstance(currency)
-
             val price = item.price.toBigDecimal()
             binding.textPrice.text = numberFormat.format(price)
 
