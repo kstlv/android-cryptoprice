@@ -3,6 +3,9 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/AndroidProjects/CryptoPrice/app/src/main/res/drawable/ic_coin_btc.xml" value="0.208" />
+        <entry key="..\:/AndroidProjects/CryptoPrice/app/src/main/res/layout/activity_main.xml" value="0.2798913043478261" />
+        <entry key="..\:/AndroidProjects/CryptoPrice/app/src/main/res/layout/item_coin.xml" value="0.2798913043478261" />
         <entry key="..\:/AndroidStudioProjects/CryptoPrice/app/src/main/res/drawable/ic_ada.xml" value="0.3425" />
         <entry key="..\:/AndroidStudioProjects/CryptoPrice/app/src/main/res/drawable/ic_coin_xrp.xml" value="0.3425" />
         <entry key="..\:/AndroidStudioProjects/CryptoPrice/app/src/main/res/layout/activity_main.xml" value="0.36666666666666664" />
