@@ -15,5 +15,5 @@
     <color name="chip_on">#FFECB3</color>
     <color name="chip_text_off">#818181</color>
     <color name="chip_text_on">#F7931A</color>
-    <color name="chip_group_bg">#ffffff</color>
+    <color name="chip_group_bg">#121212</color>
 </resources>

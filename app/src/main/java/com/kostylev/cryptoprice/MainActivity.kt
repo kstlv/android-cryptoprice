@@ -103,8 +103,6 @@ class MainActivity : AppCompatActivity() {
 
             supportActionBar?.setBackgroundDrawable(ColorDrawable(Color.WHITE))
         }
-
-        supportActionBar?.elevation = 0f
     }
 
     private fun setNightTheme(isNight: Boolean) {
@@ -120,6 +118,7 @@ class MainActivity : AppCompatActivity() {
         binding.isListScreen = false
         binding.isCoinScreen = false
         binding.chipGroup.visibility = View.GONE
+        supportActionBar?.elevation = 8f
 
         when (screens) {
             Screens.LOADING -> {
@@ -138,6 +137,7 @@ class MainActivity : AppCompatActivity() {
                 binding.isListScreen = true
                 supportActionBar?.setDisplayHomeAsUpEnabled(false)
                 binding.chipGroup.visibility = View.VISIBLE
+                supportActionBar?.elevation = 0f
             }
             Screens.COIN -> {
                 binding.isCoinScreen = true
