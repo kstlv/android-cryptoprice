@@ -7,7 +7,7 @@
 
         <variable
             name="viewModel"
-            type="com.kostylev.cryptoprice.view.ViewModelCoin" />
+            type="com.kostylev.cryptoprice.viewmodels.ViewModelCoin" />
 
         <variable
             name="item"

@@ -1,4 +1,4 @@
-package com.kostylev.cryptoprice.view
+package com.kostylev.cryptoprice.viewmodels
 
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
