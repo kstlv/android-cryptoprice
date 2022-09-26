@@ -5,11 +5,16 @@ import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Build
 import android.os.Bundle
+import android.text.Html
 import android.view.View
+import android.widget.ScrollView
+import android.widget.TextView
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.constraintlayout.utils.widget.ImageFilterView
 import androidx.databinding.DataBindingUtil
+import com.google.gson.JsonParser
 import com.kostylev.cryptoprice.adapters.RecyclerViewAdapterCoin
 import com.kostylev.cryptoprice.databinding.ActivityMainBinding
 import com.kostylev.cryptoprice.helpers.RecyclerViewItemClickListener
@@ -22,6 +27,8 @@ import retrofit2.Callback
 import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.io.IOException
+import java.net.URL
 
 class MainActivity : AppCompatActivity() {
 
@@ -46,10 +53,7 @@ class MainActivity : AppCompatActivity() {
                 binding.recyclerList,
                 object : RecyclerViewItemClickListener.OnItemClickListener {
                     override fun onItemClick(view: View, position: Int) {
-                        showMessage("position: $position")
-
-                        binding.isCoinScreen = true
-                        binding.isListScreen = false
+                        getDataCoinScreen(view)
                     }
 
                     override fun onItemLongClick(view: View?, position: Int) {
@@ -109,6 +113,54 @@ class MainActivity : AppCompatActivity() {
         viewModel.data.observe(this, {
             adapter.update(it)
         })
+    }
+
+    private fun getDataCoinScreen(view: View){
+        binding.scrollView.fullScroll(ScrollView.FOCUS_UP) // возврат к изначальному положению ScrollView (самый верх)
+
+        binding.imageCoin.setImageDrawable(view.findViewById<ImageFilterView>(R.id.imageCoinIcon).drawable)
+
+        val coinId = view.findViewById<TextView>(R.id.textId).text.toString()
+        if(coinId != "" && coinId.isNotEmpty()){
+            Thread(Runnable {
+                var json = "";
+                try {
+                    json = URL(Config.BASE_URL + "coins/$coinId").readText()
+                } catch (e: IOException) {
+                    //stringBuilder.append("Error : ").append(e.message).append("\n")
+                }
+                runOnUiThread {
+                    if(json != ""){
+                        val jsonParser = JsonParser()
+
+                        val jsonObjectDescription = jsonParser.parse(json).asJsonObject.getAsJsonObject("description")
+                        var description = jsonObjectDescription["en"].asString
+                        if(!stringIsEmpty(description))
+                            binding.textDescription.text = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) Html.fromHtml(description, Html.FROM_HTML_MODE_COMPACT) else Html.fromHtml(description) // html > textview
+                        else
+                            binding.textDescription.text = getString(R.string.no_data)
+
+                        val jsonArrayCategories = jsonParser.parse(json).asJsonObject.getAsJsonArray("categories")
+                        val category = if(jsonArrayCategories.size() != 0) jsonArrayCategories.joinToString(separator = "\n").replace("\"", "") else getString(R.string.no_data)
+                        binding.textCategory.text = category
+
+                        val coinName = view.findViewById<TextView>(R.id.textName).text.toString()
+                        binding.isCoinScreen = true
+                        binding.isListScreen = false
+                        supportActionBar?.title = coinName
+                    } else {
+                        // error
+                        binding.isCoinScreen = false
+                        binding.isListScreen = true
+                    }
+
+                }
+            }).start()
+        }
+    }
+
+    private fun stringIsEmpty(text: String): Boolean{
+        return text == "" || text == " " || text.isEmpty()
     }
 
     private fun showMessage(message: String){
