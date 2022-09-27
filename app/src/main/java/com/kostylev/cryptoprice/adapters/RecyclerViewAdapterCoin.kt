@@ -48,13 +48,11 @@ class RecyclerViewAdapterCoin : RecyclerView.Adapter<RecyclerViewAdapterCoin.Vie
             val percentage = item.percentage;
             val percentageIsNegative = percentage[0] == '-'
             binding.textPercentage.setTextColor(Color.parseColor(if(percentageIsNegative) "#EB5757" else "#2A9D8F"))
-            val percentFormat: NumberFormat = NumberFormat.getPercentInstance()
-            percentFormat.maximumFractionDigits = 2
-            binding.textPercentage.text = (if(percentageIsNegative) "" else "+") + percentFormat.format(percentage.toBigDecimal())
+            binding.textPercentage.text = (if(percentageIsNegative) "" else "+") + String.format("%.2f", percentage.toBigDecimal()) + "%"
 
             val numberFormat: NumberFormat = NumberFormat.getCurrencyInstance()
             numberFormat.maximumFractionDigits = 2 // количество десятичных знаков
-            var currency = Properties.instance?.currency.toString()
+            val currency = Properties.instance?.currency.toString()
             numberFormat.currency = Currency.getInstance(currency)
             val price = item.price.toBigDecimal()
             binding.textPrice.text = numberFormat.format(price)
