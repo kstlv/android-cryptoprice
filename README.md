@@ -3,9 +3,11 @@
 CryptoPrice — Android-приложение, позволяющее просматривать информацию о криптовалютах. Приложение получает данные при помощи [CoinGecko API](https://www.coingecko.com/ru/api/documentation).
 
 - [Видео-демонстрация работы приложения](https://youtu.be/ntPU0rzGoG8)
-- [Скачать собранный .apk](https://drive.google.com/file/d/1nbU9NUL-mj1QV1XU0MAiewGMhLm1ISSr/view)
+- [Скачать собранный .apk](https://drive.google.com/file/d/1SuxMSajqCo125wN-OOzxE7YQffSZFQMQ/view)
 
 ![screenshots](./screenshots.png)
+
+> В видео и на скриншотах присутствует баг с неверным отображением изменения текущей цены в процентах. Баг был исправлен в коммите `815c861`, в представленном собранном .apk этот баг исправлен :D
 
 ## Функционал
 
